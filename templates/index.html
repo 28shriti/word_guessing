@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess the Word Game</title>
+
+    <!-- Bootstrap for easy styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="index.css">
+    
+    <!-- Custom CSS -->
+</head>
+<body>
+    <div class="container">
+        <h1>Guess the Word!</h1>
+        <p class="word-display" id="word">{{ word }}</p>
+        <p><strong>Attempts Left:</strong> <span id="attempts">{{ attempts }}</span></p>
+        <p><strong>Score:</strong> <span id="score">{{ score }}</span></p>
+
+        <input type="text" id="guessInput" class="form-control text-start w-50 mt-3" maxlength="1" placeholder="Enter a letter">
+        <button class="btn btn-success btn-custom mt-3" onclick="makeGuess()">Submit</button>
+        <button class="btn btn-warning btn-custom mt-3" onclick="useHint()">Hint</button>
+
+        <p id="message"></p>
+    </div>
+
+
+    <script>
+        function makeGuess() {
+            let guess = document.getElementById("guessInput").value.toLowerCase();
+            if (!guess) return;
+
+            fetch('/guess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ letter: guess })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("message").innerText = data.message;
+                document.getElementById("word").innerText = data.word;
+                document.getElementById("attempts").innerText = data.attempts;
+                document.getElementById("score").innerText = data.score;
+                document.getElementById("guessInput").value = "";
+
+                // Animation for success or failure
+                let messageEl = document.getElementById("message");
+                messageEl.style.color = data.success ? "lightgreen" : "red";
+                messageEl.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    messageEl.style.transform = "scale(1)";
+                }, 300);
+            });
+        }
+
+        function useHint() {
+            fetch('/hint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("message").innerText = data.message;
+                document.getElementById("word").innerText = data.word;
+
+                // Highlight hint animation
+                let wordEl = document.getElementById("word");
+                wordEl.style.color = "yellow";
+                setTimeout(() => {
+                    wordEl.style.color = "white";
+                }, 1000);
+            });
+        }
+    </script>
+</body>
+</html>
+
+
